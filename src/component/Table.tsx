@@ -33,15 +33,7 @@ interface Item {
     address: string
 }
 
-const originData: Item[] = []
-for (let i = 0; i < 100; i++) {
-    originData.push({
-        key: i.toString(),
-        name: `Edward ${i}`,
-        age: 32,
-        address: `London Park no. ${i}`,
-    })
-}
+
 interface EditableCellProps extends React.HTMLAttributes<HTMLElement> {
     editing: boolean
     dataIndex: string
@@ -90,10 +82,10 @@ const MyTable: React.FC = () => {
     const [form] = Form.useForm()
     const [type, setType] = useState("info")
     const [originData, setOriginData] = useState<any>([])
-    const getData = async () => {
+    const getData = async (page:number=1) => {
         await axios
             .post("/service/page", {
-                currentPage: 1,
+                currentPage: page,
                 pageSize: 10,
             })
             .then(res => {
@@ -365,10 +357,11 @@ const MyTable: React.FC = () => {
                             <MySearch
                                 onSearch={(value: any) => {
                                     const newData = data.filter((item:any) =>{
-                                        (item as any).applicationName.includes(
+                                      return  (item as any).applicationName.includes(
                                             value
                                         )}
                                     )
+                                  
                                     if (!value) {
                                         setData(originData)
                                         return
@@ -413,7 +406,9 @@ const MyTable: React.FC = () => {
                         columns={mergedColumns}
                         rowClassName="editable-row"
                         pagination={{
-                            onChange: cancel,
+                            onChange: page=>{
+                                getData(page)
+                            },
                         }}
                     />
                 </Space>
