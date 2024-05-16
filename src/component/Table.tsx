@@ -7,7 +7,6 @@ import {
     Input,
     InputNumber,
     Modal,
-    Pagination,
     Popconfirm,
     Radio,
     Select,
@@ -18,14 +17,16 @@ import {
     notification,
 } from "antd"
 import axios from "../myAxios"
-import { PlusCircleOutlined, RedoOutlined } from "@ant-design/icons"
+import {
+    CheckCircleOutlined,
+    StopOutlined,
+    RedoOutlined,
+} from "@ant-design/icons"
 import { render } from "react-dom"
 import styled from "styled-components"
 import MySearch from "./search"
 import MySteps from "./Steps"
 import Item from "antd/es/list/Item"
-import { useLocation } from "react-router-dom"
-import moment from "moment"
 
 interface Item {
     key: string
@@ -88,245 +89,355 @@ const EditableCell: React.FC<EditableCellProps> = ({
 }
 const MyTableStyle = styled.div``
 const MyTable: React.FC = () => {
-    const [total, setTotal] = useState(100)
     const [form] = Form.useForm()
-    const [option, setOption] = useState<any>([])
-    const orderColumns: TableProps["columns"] = [
-        {
-            title: "id",
-            dataIndex: "id",
-            // width: "25%",
-            key: "id",
-            render: (value: any) => {
-                if (!value) return <a>-</a>
-                return <a>{value}</a>
-            },
-        },
-        {
-            title: "发货地址",
-            dataIndex: "deliveryAddress",
-            key: "deliveryAddress",
-            render: (value: any) => {
-                if (!value) return <a>-</a>
-                return <a>{value}</a>
-            },
-        },
-        {
-            title: "收货地址",
-            dataIndex: "destinationAddress",
-            key: "destinationAddress",
-            render: (value: any) => {
-                if (!value) return <a>-</a>
-                return <a>{value}</a>
-            },
-        },
-        {
-            title: "产品名",
-            key: "productName",
-            dataIndex: "productName",
-            render: (value: any) => {
-                if (!value) return <a>-</a>
-                return <a>{value}</a>
-            },
-        },
-        {
-            title: "数量",
-            key: "count",
-            dataIndex: "count",
-        },
-        {
-            title: "总金额",
-            key: "totalAmount",
-            dataIndex: "totalAmount",
-            render: (value: any) => {
-                if (!value) return <a>-</a>
-                return <a>{value}</a>
-            },
-        },
-        {
-            title: "创建时间",
-            key: "createAt",
-            dataIndex: "createAt",
-            render: (value: any) => {
-                if (!value) return <a>-</a>
-                return moment(value).format("YYYY-MM-DD HH:mm:ss")
-            },
-        },
-        {
-            title: "最近一次更新时间",
-            key: "updateAt",
-            dataIndex: "updateAt",
-            render: (value: any) => {
-                if (!value) return <a>-</a>
-                return moment(value).format("YYYY-MM-DD HH:mm:ss")
-            },
-        },
-    ]
-    const productColumns: TableProps["columns"] = [
-        {
-            title: "id",
-            dataIndex: "id",
-            // width: "25%",
-            key: "id",
-            render: (value: any) => {
-                if (!value) return <a>-</a>
-                return <a>{value}</a>
-            },
-        },
-        {
-            title: "产品名",
-            key: "name",
-            dataIndex: "name",
-            render: (value: any) => {
-                if (!value) return <a>-</a>
-                return <a>{value}</a>
-            },
-        },
-        {
-            title: "价格",
-            key: "price",
-            dataIndex: "price",
-        },
-        {
-            title: "仓库编号",
-            key: "wareId",
-            dataIndex: "wareId",
-            render: (value: any) => {
-                if (!value) return <a>-</a>
-                return <a>{value}</a>
-            },
-        },
-        {
-            title: "创建时间",
-            key: "createAt",
-            dataIndex: "createAt",
-            render: (value: any) => {
-                if (!value) return <a>-</a>
-                return moment(value).format("YYYY-MM-DD HH:mm:ss")
-            },
-        },
-        {
-            title: "最近一次更新时间",
-            key: "updateAt",
-            dataIndex: "updateAt",
-            render: (value: any) => {
-                if (!value) return <a>-</a>
-                return moment(value).format("YYYY-MM-DD HH:mm:ss")
-            },
-        },
-    ]
-    const wareColumns: TableProps["columns"] = [
-        {
-            title: "id",
-            dataIndex: "id",
-            // width: "25%",
-            key: "id",
-            // editable: true,
-            render: (value: any) => {
-                if (!value) return <a>-</a>
-                return <a>{value}</a>
-            },
-        },
-        {
-            title: "库存",
-            dataIndex: "stock",
-            key: "stock",
-            render: (value: any) => {
-                if (!value) return <a>-</a>
-                return <a>{value}</a>
-            },
-        },
-        {
-            title: "产品名",
-            key: "name",
-            dataIndex: "name",
-            render: (value: any) => {
-                if (!value) return <a>-</a>
-                return <a>{value}</a>
-            },
-        },
-        {
-            title: "创建时间",
-            key: "createAt",
-            dataIndex: "createAt",
-            render: (value: any) => {
-                if (!value) return <a>-</a>
-                return moment(value).format("YYYY-MM-DD HH:mm:ss")
-            },
-        },
-        {
-            title: "最近一次更新时间",
-            key: "updateAt",
-            dataIndex: "updateAt",
-            render: (value: any) => {
-                if (!value) return <a>-</a>
-                return moment(value).format("YYYY-MM-DD HH:mm:ss")
-            },
-        },
-    ]
-    const columns = {
-        order: orderColumns,
-        product: productColumns,
-        ware: wareColumns,
-    }
-    const type = useLocation().pathname.split("/")[2]
+    const [type, setType] = useState("info")
     const getData = async () => {
         await axios
-            .post(`/${type}/${type}/page`, {
-                currentPage: 1,
-                pageSize: 2,
-            })
-            .then(res => {
-                setData(res.data.data)
-                setTotal(res.data.totalCount)
-            })
-    }
-    const [data, setData] = useState([])
-    const [myForm] = Form.useForm()
-    const [product, setProduct] = useState<any>({})
-
-    const getOption = async () => {
-        await axios
-            .post("/product/product/page", {
+            .post("/service/page", {
                 currentPage: 1,
                 pageSize: 10,
             })
             .then(res => {
-                setOption(
-                    res.data.data.map((item: any) => {
-                        const { name, ...rest } = item
-                        return {
-                            label: name,
-                            value: name,
-                            ...rest,
-                        }
-                    })
-                )
+                setData(res.data)
             })
+    }
+    const [option,setOption] = useState([])
+    const [data, setData] = useState(originData)
+    const [editingKey, setEditingKey] = useState("")
+
+    const isEditing = (record: Item) => record.key === editingKey
+
+    const edit = (record: Partial<Item> & { key: React.Key }) => {
+        form.setFieldsValue({ name: "", age: "", address: "", ...record })
+        setEditingKey(record.key)
+    }
+
+    const getOption = async () => {
+        const data = await axios.get("/service/getRouterStrategy")
+        const option = data.data.map((item:any)=>({label:item,value:item}))
+        setOption(option)
+    }
+    const cancel = () => {
+        setEditingKey("")
     }
     useEffect(() => {
         getData()
-        if (type === "order") {
-            getOption()
+        getOption()
+    }, [])
+
+    const save = async (key: React.Key) => {
+        try {
+            const row = (await form.validateFields()) as Item
+
+            const newData = [...data]
+            const index = newData.findIndex(item => key === item.key)
+            if (index > -1) {
+                const item = newData[index]
+                newData.splice(index, 1, {
+                    ...item,
+                    ...row,
+                })
+                setData(newData)
+                setEditingKey("")
+            } else {
+                newData.push(row)
+                setData(newData)
+                setEditingKey("")
+            }
+        } catch (errInfo) {
+            console.log("Validate Failed:", errInfo)
         }
-    }, [type])
-    useEffect(() => {
-        myForm.setFieldsValue(product)
-    }, [product])
-    useEffect(() => {
-        if (!myForm.getFieldValue("count")) return
-        myForm.setFieldsValue({
-            totalAmount:
-                Number(myForm.getFieldValue("count")) * Number(product.price),
+    }
+    const getLog = async ({ type, applicationName }: any) => {
+        const data = await axios.post("/log/" + type, {
+            applicationName,
         })
-    }, [myForm.getFieldValue("productName"), myForm.getFieldValue("count")])
+        return data
+    }
+    const [msg, setMsg] = useState("")
+    useEffect(() => {
+        form.setFieldsValue({ msg })
+    }, [msg])
+
+    const columns = [
+        {
+            title: "应用名",
+            dataIndex: "applicationName",
+            width: "25%",
+            key: "applicationName",
+            editable: true,
+            render: (value: any) => {
+                if (!value) return <a>-</a>
+                return <a>{value}</a>
+            },
+            // filters:data.map(item=>({text:item.name,value:item.name})),
+            // onFilter: (value:any, record:any) => record.name.includes(value as string)
+        },
+        {
+            title: "组名",
+            dataIndex: "group",
+            key: "group",
+            editable: true,
+            render: (value: any) => {
+                if (!value) return <a>-</a>
+                return <a>{value}</a>
+            },
+        },
+        {
+            title: "ip地址",
+            dataIndex: "ip",
+            key: "ip",
+            editable: true,
+            render: (value: any) => {
+                if (!value) return <a>-</a>
+                return <a>{value}</a>
+            },
+        },
+        {
+            title: "端口号",
+            key: "port",
+            dataIndex: "port",
+            render: (value: any) => {
+                if (!value) return <a>-</a>
+                return <a>{value}</a>
+            },
+        },
+        {
+            title: "状态",
+            key: "status",
+            dataIndex: "status",
+            render: (value: any) => {
+                if (!!value) {
+                    return (
+                        <Tag icon={<CheckCircleOutlined />} color="success">
+                            在线
+                        </Tag>
+                    )
+                } else {
+                    return (
+                        <Tag color="error" icon={<StopOutlined />}>
+                            离线
+                        </Tag>
+                    )
+                }
+            },
+        },
+        {
+            title: "版本号",
+            key: "version",
+            dataIndex: "version",
+            render: (value: any) => {
+                if (!value) return <a>-</a>
+                return <a>{value}</a>
+            },
+        },{
+            title:"负载均衡",
+            key:"routerStrategy",
+            dataIndex:"routerStrategy",
+            editable:true,
+            render:(value:any,record:any)=>{
+                // if(!value) return <a>-</a>
+                const editable = isEditing(record)
+                return  (editingKey===record.applicationName&&record.status)? <Select style={{width:"100%"}} options={option}  onChange={(value1)=>{
+                    console.log(value)
+                    axios.post("/service/updateRouterStrategy",{
+                        applicationName:record.applicationName,
+                        oldRouterStrategy:value,
+                        newRouterStrategy:value1,
+                    }).then((res:any)=>{
+                        if(res.code===0){
+                            notification.success({
+                                message:"修改成功"
+                            })
+                            getData()
+                        }else{
+                            notification.error({
+                                message:"修改失败"
+                            })
+                        }
+                        setEditingKey("")
+                    })
+                }} />:<a onClick={()=>{
+                    console.log(record.applicationName)
+                    setEditingKey(record.applicationName)
+                }}>{value}</a>
+                
+            }
+        },
+        {
+            title: "操作",
+            key: "action",
+            render: (_: any, record: any) => {
+                return (
+                    <Space>
+                        <Button
+                            type="primary"
+                            onClick={() => {
+                                getLog({
+                                    type: "info",
+                                    applicationName: record.applicationName,
+                                }).then((res: any) => {
+                                    setMsg(res.msg)
+                                    Modal.info({
+                                        title: "日志查看",
+                                        content: (
+                                            <Space
+                                                direction="vertical"
+                                                style={{ width: "100%" }}
+                                            >
+                                                <Flex justify="space-between">
+                                                    <Radio.Group
+                                                        defaultValue="info"
+                                                        buttonStyle="solid"
+                                                        onChange={(
+                                                            value: RadioChangeEvent
+                                                        ) => {
+                                                            const type =
+                                                                value.target
+                                                                    .value
+                                                            setType(type)
+                                                            setTimeout(() => {
+                                                                getLog({
+                                                                    type,
+                                                                    applicationName:
+                                                                        record.applicationName,
+                                                                }).then(
+                                                                    (res: any) => {
+                                                                        setMsg(
+                                                                            res.msg
+                                                                        )
+                                                                    }
+                                                                )
+                                                            }, 100)
+                                                        }}
+                                                    >
+                                                        <Radio.Button
+                                                            value={"info"}
+                                                        >
+                                                            info
+                                                        </Radio.Button>
+                                                        <Radio.Button
+                                                            value={"error"}
+                                                        >
+                                                            error
+                                                        </Radio.Button>
+                                                        <Radio.Button
+                                                            value={"warn"}
+                                                        >
+                                                            warn
+                                                        </Radio.Button>
+                                                        <Radio.Button
+                                                            value={"debug"}
+                                                        >
+                                                            debug
+                                                        </Radio.Button>
+                                                    </Radio.Group>
+                                                    <Button
+                                                        type="primary"
+                                                        onClick={() => {
+                                                            getLog({
+                                                                type,
+                                                                applicationName:record.applicationName,
+                                                            })
+                                                        }}
+                                                    >
+                                                        刷新
+                                                    </Button>
+                                                </Flex>
+                                                <Form form={form}>
+                                                    <Form.Item name={"msg"}>
+                                                        <Input.TextArea
+                                                            rows={25}
+                                                        />
+                                                    </Form.Item>
+                                                </Form>
+                                            </Space>
+                                        ),
+                                        closable: true,
+                                        width: 1500,
+                                    })
+                                })
+                            }}
+                        >
+                            日志查看
+                        </Button>
+                    </Space>
+                )
+            },
+        },
+        // {
+        //     title: "operation",
+        //     dataIndex: "operation",
+        //     render: (_: any, record: Item) => {
+        //         const editable = isEditing(record)
+        //         return editable ? (
+        //             <span>
+        //                 <Typography.Link
+        //                     onClick={() => save(record.key)}
+        //                     style={{ marginRight: 8 }}
+        //                 >
+        //                     Save
+        //                 </Typography.Link>
+        //                 <Popconfirm title="Sure to cancel?" onConfirm={cancel}>
+        //                     <a>Cancel</a>
+        //                 </Popconfirm>
+        //             </span>
+        //         ) : (
+        //             <Typography.Link
+        //                 disabled={editingKey !== ""}
+        //                 onClick={() => edit(record)}
+        //             >
+        //                 更改
+        //             </Typography.Link>
+        //         )
+        //     },
+        // },
+    ]
+
+    const mergedColumns: TableProps["columns"] = columns.map(col => {
+        if (!col.editable) {
+            return col
+        }
+        return {
+            ...col,
+            onCell: (record: Item) => ({
+                record,
+                inputType: col.dataIndex === "age" ? "number" : "text",
+                dataIndex: col.dataIndex,
+                title: col.title,
+                editing: isEditing(record),
+            }),
+        }
+    })
+
     return (
         <MyTableStyle>
             <Form form={form} component={false}>
                 <Space direction="vertical" style={{ width: "100%" }}>
+                    <Flex>
+                        <Form.Item
+                            label="应用名搜索"
+                            style={{ lineHeight: "64px" }}
+                        >
+                            <MySearch
+                                onSearch={(value: any) => {
+                                    const newData = data.filter(item =>
+                                        (item as any).applicationName.includes(
+                                            value
+                                        )
+                                    )
+                                    setData(newData)
+                                }}
+                            />
+                        </Form.Item>
+                    </Flex>
                     <Table
-                        pagination={false}
                         key={1}
+                        components={{
+                            body: {
+                                cell: EditableCell,
+                            },
+                        }}
                         bordered
                         title={() => (
                             <Flex
@@ -334,230 +445,29 @@ const MyTable: React.FC = () => {
                                 justify="space-between"
                             >
                                 <Typography.Title level={4}>
-                                    {
-                                        {
-                                            order: "订单",
-                                            product: "产品",
-                                            ware: "仓库",
-                                        }[type]
-                                    }
-                                    列表
+                                    应用列表
                                 </Typography.Title>
-                                <Space>
-                                    {type === "order" && (
-                                        <Button
-                                            type="primary"
-                                            onClick={() => {
-                                                Modal.confirm({
-                                                    icon: " ",
-                                                    title: "添加订单",
-                                                    width: 800,
-                                                    cancelText: "取消",
-                                                    okText: "确定",
-                                                    content: (
-                                                        <Form
-                                                            form={myForm}
-                                                            labelCol={{
-                                                                span: 4,
-                                                            }}
-                                                            wrapperCol={{
-                                                                span: 16,
-                                                            }}
-                                                        >
-                                                            <Form.Item
-                                                                label="产品名"
-                                                                name="productName"
-                                                                rules={[
-                                                                    {
-                                                                        required:
-                                                                            true,
-                                                                        message:
-                                                                            "请输入产品名",
-                                                                    },
-                                                                ]}
-                                                            >
-                                                                <Select
-                                                                    options={
-                                                                        option
-                                                                    }
-                                                                    onChange={value => {
-                                                                        setProduct(
-                                                                            option.find(
-                                                                                (
-                                                                                    item: any
-                                                                                ) =>
-                                                                                    item.label ===
-                                                                                    value
-                                                                            )
-                                                                        )
-                                                                    }}
-                                                                />
-                                                            </Form.Item>
-                                                            <Form.Item
-                                                                label="单价"
-                                                                required
-                                                            >
-                                                                <Form.Item
-                                                                    name={
-                                                                        "price"
-                                                                    }
-                                                                    noStyle
-                                                                >
-                                                                    <InputNumber
-                                                                        readOnly
-                                                                    />
-                                                                </Form.Item>{" "}
-                                                                件数:
-                                                                <Form.Item
-                                                                    noStyle
-                                                                    name="count"
-                                                                    rules={[
-                                                                        {
-                                                                            required:
-                                                                                true,
-                                                                            message:
-                                                                                "请输入件数",
-                                                                        },
-                                                                    ]}
-                                                                >
-                                                                    <InputNumber
-                                                                        min={1}
-                                                                        defaultValue={
-                                                                            1
-                                                                        }
-                                                                        onChange={value => {
-                                                                            if (
-                                                                                !value
-                                                                            )
-                                                                                return
-                                                                            myForm.setFieldsValue(
-                                                                                {
-                                                                                    totalAmount:
-                                                                                        Number(
-                                                                                            value
-                                                                                        ) *
-                                                                                        Number(
-                                                                                            product.price
-                                                                                        ),
-                                                                                }
-                                                                            )
-                                                                        }}
-                                                                    />
-                                                                </Form.Item>{" "}
-                                                                总价:
-                                                                <Form.Item
-                                                                    name="totalAmount"
-                                                                    noStyle
-                                                                >
-                                                                    <InputNumber
-                                                                        readOnly
-                                                                    />
-                                                                </Form.Item>
-                                                            </Form.Item>
-                                                            <Form.Item
-                                                                label="发货地址"
-                                                                name="deliveryAddress"
-                                                                rules={[
-                                                                    {
-                                                                        required:
-                                                                            true,
-                                                                        message:
-                                                                            "请输入发货地址",
-                                                                    },
-                                                                ]}
-                                                            >
-                                                                <Input />
-                                                            </Form.Item>
-                                                            <Form.Item
-                                                                label="收货地址"
-                                                                name="destinationAddress"
-                                                                rules={[
-                                                                    {
-                                                                        required:
-                                                                            true,
-                                                                        message:
-                                                                            "请输入收货地址",
-                                                                    },
-                                                                ]}
-                                                            >
-                                                                <Input />
-                                                            </Form.Item>
-                                                        </Form>
-                                                    ),
-                                                    onOk: () => {
-                                                        myForm
-                                                            .validateFields()
-                                                            .then(values => {
-                                                                const {
-                                                                    price,
-                                                                    ...rest
-                                                                } = values
-                                                                axios
-                                                                    .post(
-                                                                        "/order/order/createOrder",
-                                                                        {
-                                                                            ...rest,
-                                                                            userId: 1,
-                                                                            productId:
-                                                                                product.id,
-                                                                        }
-                                                                    )
-                                                                    .then(
-                                                                        res => {
-                                                                            notification.success(
-                                                                                {
-                                                                                    message:
-                                                                                        "添加成功",
-                                                                                }
-                                                                            )
-                                                                            myForm.resetFields()
-                                                                            getData()
-                                                                        }
-                                                                    )
-                                                            })
-                                                    },
-                                                })
-                                            }}
-                                        >
-                                            <PlusCircleOutlined />
-                                        </Button>
-                                    )}
-                                    <Button
-                                        type="primary"
-                                        onClick={() => {
-                                            getData().then(() => {
-                                                notification.success({
-                                                    message: "刷新成功",
-                                                })
+                                <Button
+                                    type="primary"
+                                    onClick={() => {
+                                        getData().then(() => {
+                                            notification.success({
+                                                message: "刷新成功",
                                             })
-                                        }}
-                                    >
-                                        <RedoOutlined />
-                                    </Button>
-                                </Space>
+                                        })
+                                    }}
+                                >
+                                    <RedoOutlined />
+                                </Button>
                             </Flex>
                         )}
                         dataSource={data}
-                        // @ts-ignore
-                        columns={columns[type]}
+                        columns={mergedColumns}
                         rowClassName="editable-row"
+                        pagination={{
+                            onChange: cancel,
+                        }}
                     />
-                    <Pagination defaultCurrent={1} 
-                    pageSize={10}
-                            total={total} 
-                            showTotal={total => `共 ${total} 条`} 
-                            onChange={async (page: number) => {
-                                await axios
-                                    .post(`/${type}/${type}/page`, {
-                                        currentPage: page,
-                                        pageSize: 10,
-                                    })
-                                    .then(res => {
-                                        setData(res.data.data)
-                                        setTotal(res.data.totalCount)
-                                    })
-                            }
-                        } />
                 </Space>
             </Form>
         </MyTableStyle>

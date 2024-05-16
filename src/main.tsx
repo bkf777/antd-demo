@@ -10,9 +10,8 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import Login from './views/tab/login/index.tsx';
-import MyTable from './component/Table.tsx';
 
-export const router = createBrowserRouter([
+const router = createBrowserRouter([
   {
     path: "/",
     element: <Login />,
@@ -20,16 +19,6 @@ export const router = createBrowserRouter([
   {
     path: "/app",
     element: <App />,
-    children: [{
-      path: "/app/ware",
-      element: <MyTable />,
-    },{
-      path: "/app/product",
-      element: <MyTable />
-    },{
-      path: "/app/order",
-      element: <MyTable />
-    }]
   },
 ]);
 
