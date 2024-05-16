@@ -7,7 +7,6 @@ import {
     Input,
     InputNumber,
     Modal,
-    Popconfirm,
     Radio,
     Select,
     Space,
@@ -22,10 +21,9 @@ import {
     StopOutlined,
     RedoOutlined,
 } from "@ant-design/icons"
-import { render } from "react-dom"
+
 import styled from "styled-components"
 import MySearch from "./search"
-import MySteps from "./Steps"
 import Item from "antd/es/list/Item"
 
 interface Item {
@@ -91,6 +89,7 @@ const MyTableStyle = styled.div``
 const MyTable: React.FC = () => {
     const [form] = Form.useForm()
     const [type, setType] = useState("info")
+    const [originData, setOriginData] = useState<any>([])
     const getData = async () => {
         await axios
             .post("/service/page", {
@@ -99,6 +98,7 @@ const MyTable: React.FC = () => {
             })
             .then(res => {
                 setData(res.data)
+                setOriginData(res.data)
             })
     }
     const [option,setOption] = useState([])
@@ -106,11 +106,6 @@ const MyTable: React.FC = () => {
     const [editingKey, setEditingKey] = useState("")
 
     const isEditing = (record: Item) => record.key === editingKey
-
-    const edit = (record: Partial<Item> & { key: React.Key }) => {
-        form.setFieldsValue({ name: "", age: "", address: "", ...record })
-        setEditingKey(record.key)
-    }
 
     const getOption = async () => {
         const data = await axios.get("/service/getRouterStrategy")
@@ -125,29 +120,6 @@ const MyTable: React.FC = () => {
         getOption()
     }, [])
 
-    const save = async (key: React.Key) => {
-        try {
-            const row = (await form.validateFields()) as Item
-
-            const newData = [...data]
-            const index = newData.findIndex(item => key === item.key)
-            if (index > -1) {
-                const item = newData[index]
-                newData.splice(index, 1, {
-                    ...item,
-                    ...row,
-                })
-                setData(newData)
-                setEditingKey("")
-            } else {
-                newData.push(row)
-                setData(newData)
-                setEditingKey("")
-            }
-        } catch (errInfo) {
-            console.log("Validate Failed:", errInfo)
-        }
-    }
     const getLog = async ({ type, applicationName }: any) => {
         const data = await axios.post("/log/" + type, {
             applicationName,
@@ -236,8 +208,6 @@ const MyTable: React.FC = () => {
             dataIndex:"routerStrategy",
             editable:true,
             render:(value:any,record:any)=>{
-                // if(!value) return <a>-</a>
-                const editable = isEditing(record)
                 return  (editingKey===record.applicationName&&record.status)? <Select style={{width:"100%"}} options={option}  onChange={(value1)=>{
                     console.log(value)
                     axios.post("/service/updateRouterStrategy",{
@@ -365,33 +335,6 @@ const MyTable: React.FC = () => {
                 )
             },
         },
-        // {
-        //     title: "operation",
-        //     dataIndex: "operation",
-        //     render: (_: any, record: Item) => {
-        //         const editable = isEditing(record)
-        //         return editable ? (
-        //             <span>
-        //                 <Typography.Link
-        //                     onClick={() => save(record.key)}
-        //                     style={{ marginRight: 8 }}
-        //                 >
-        //                     Save
-        //                 </Typography.Link>
-        //                 <Popconfirm title="Sure to cancel?" onConfirm={cancel}>
-        //                     <a>Cancel</a>
-        //                 </Popconfirm>
-        //             </span>
-        //         ) : (
-        //             <Typography.Link
-        //                 disabled={editingKey !== ""}
-        //                 onClick={() => edit(record)}
-        //             >
-        //                 更改
-        //             </Typography.Link>
-        //         )
-        //     },
-        // },
     ]
 
     const mergedColumns: TableProps["columns"] = columns.map(col => {
@@ -421,12 +364,17 @@ const MyTable: React.FC = () => {
                         >
                             <MySearch
                                 onSearch={(value: any) => {
-                                    const newData = data.filter(item =>
+                                    const newData = data.filter((item:any) =>{
                                         (item as any).applicationName.includes(
                                             value
-                                        )
+                                        )}
                                     )
+                                    if (!value) {
+                                        setData(originData)
+                                        return
+                                    }else{
                                     setData(newData)
+                                    }
                                 }}
                             />
                         </Form.Item>

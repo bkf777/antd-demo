@@ -42,13 +42,12 @@ const layoutStyle = {
 
 const MyLayout: React.FC = () => (
     <Layout style={layoutStyle}>
-        <Header style={headerStyle}>1</Header>
+        <Header style={headerStyle}>RPC-Framework-Dashboard</Header>
         <Layout>
             <Sider width="15%" style={siderStyle}>
             </Sider>
             <Content style={contentStyle}>
                 <Space direction="vertical" style={{width:"100%"}}>
-                    <MySearch />
                     <Tab1/>
                 </Space>
             </Content>
@@ -63,7 +62,6 @@ export default MyLayout
 
 
 
-import MySearch from "./search"
-import MyTabs from "../views/tab/tab"
+
 import Tab1 from "../views/tab/tabs/tab1"
 
